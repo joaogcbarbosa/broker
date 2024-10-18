@@ -1,5 +1,0 @@
-name: broker
-channels:
-  - defaults
-dependencies:
-  - python==3.12.7
