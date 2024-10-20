@@ -82,14 +82,15 @@ class Subscriber(Process):
 if __name__ == "__main__":
     publisher = Publisher()
     broker = Broker()
-    sports_subscriber_1 = Subscriber(name="João", topics=["Sports", "Tech"])
-    sports_subscriber_2 = Subscriber(name="Gustavo", topics=["Sports"])
-    tech_subscriber_1 = Subscriber(name="Rafael", topics=None)
-    news_subscriber_1 = Subscriber(name="Tiago", topics=["News"])
 
-    sports_subscriber_1.start()
-    sports_subscriber_2.start()
-    tech_subscriber_1.start()
-    news_subscriber_1.start()
+    subscriber_1 = Subscriber(name="João", topics=["Sports", "Tech"])
+    subscriber_2 = Subscriber(name="Gustavo", topics=["Sports"])
+    subscriber_3 = Subscriber(name="Rafael", topics=None)
+    subscriber_4 = Subscriber(name="Tiago", topics=["News"])
+
+    subscriber_1.start()
+    subscriber_2.start()
+    subscriber_3.start()
+    subscriber_4.start()
     broker.start()
     publisher.start()
