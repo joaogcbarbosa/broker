@@ -49,37 +49,43 @@ class Publisher(Thread):
 
 
 class Subscriber(Process):
-    def __init__(self, topic):
+    def __init__(self, name, topics):
         Process.__init__(self)
-        self._topic: str = topic
+        self._name: str = name
+        self._topics: list[str] | None = topics
 
     @property
-    def topic(self):
-        return self._topic
+    def topics(self):
+        return self._topics
     
-    def get_message(self, topic: str) -> None:
+    def get_message(self, topics: list[str]) -> None:
         while True:
-            item = broker.queues[topic].get()
-            if item is None:
-                break
-            print(f"Consumindo {item}")
+            if topics is None:
+                continue
+            print("#" * 20)
+            for t in topics:
+                item = broker.queues[t].get()
+                if item is None:
+                    break
+                print(f"{self.name} consumindo {item}")
+            print("#" * 20)
 
     def run(self):
         """
             Get messages from broker every 3 seconds.
         """
         while True:
-            self.get_message(self.topic)
+            self.get_message(self.topics)
             sleep(3)
 
 
 if __name__ == "__main__":
     publisher = Publisher()
     broker = Broker()
-    sports_subscriber_1 = Subscriber(topic="Sports")
-    sports_subscriber_2 = Subscriber(topic="Sports")
-    tech_subscriber_1 = Subscriber(topic="Tech")
-    news_subscriber_1 = Subscriber(topic="News")
+    sports_subscriber_1 = Subscriber(name="João", topics=["Sports", "Tech"])
+    sports_subscriber_2 = Subscriber(name="Gustavo", topics=["Sports"])
+    tech_subscriber_1 = Subscriber(name="Rafael", topics=None)
+    news_subscriber_1 = Subscriber(name="Tiago", topics=["News"])
 
     sports_subscriber_1.start()
     sports_subscriber_2.start()
