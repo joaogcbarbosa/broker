@@ -1,9 +1,10 @@
-from threading import Thread
-from multiprocessing import Queue, Process
+from multiprocessing import Process, Queue
 from random import choice
+from threading import Thread
 from time import sleep
 
 TOPICS = ["Sports", "News", "Tech"]
+
 
 class Broker(Thread):
     def __init__(self):
@@ -12,7 +13,7 @@ class Broker(Thread):
 
     def run(self):
         """
-            Keeps broker running.
+        Keeps broker running.
         """
         while True:
             pass
@@ -24,7 +25,7 @@ class Publisher(Thread):
 
     def run(self):
         """
-            Generates a message of a random subject (between Sports, News and Tech) and put it on broker every 2 seconds.
+        Generates a message of a random subject (between Sports, News and Tech) and put it on broker every 2 seconds.
         """
         sports_counter = news_counter = tech_counter = 1
         while True:
@@ -57,7 +58,7 @@ class Subscriber(Process):
     @property
     def topics(self):
         return self._topics
-    
+
     def get_message(self, topics: list[str]) -> None:
         while True:
             if topics is None:
@@ -71,7 +72,7 @@ class Subscriber(Process):
 
     def run(self):
         """
-            Get messages from broker every 3 seconds.
+        Get messages from broker every 3 seconds.
         """
         while True:
             self.get_message(self.topics)
