@@ -11,26 +11,28 @@ class Broker(Thread):
         Thread.__init__(self)
         self.queues = {t: Queue() for t in TOPICS}
 
-    # def _deliver_messages(self, message: str) -> str:
-    #     return message
-
     def run(self):
+        """
+            Keeps broker running.
+        """
         while True:
-            # print(self._deliver_messages(self.queues["Sports"].get()))
-            sleep(3)
-
+            pass
 
 class Publisher(Thread):
     def __init__(self):
         Thread.__init__(self)
 
     def run(self):
+        """
+            Generates a message of a random subject (between Sports, News and Tech) and put it on broker every 2 seconds.
+        """
         sports_counter = 1
         while True:
             topic_choice = choice(TOPICS)
             match topic_choice:
                 case "Sports":
-                    broker.queues["Sports"].put(f"{topic_choice} {sports_counter}")
+                    msg = f"{topic_choice} {sports_counter}"
+                    broker.queues["Sports"].put(msg)
                     sports_counter += 1
                     broker.queues["Sports"].put(None)
             sleep(2)
@@ -53,9 +55,12 @@ class Subscriber(Process):
             print(f"Consumindo {item}")
 
     def run(self):
+        """
+            Get messages from broker every 3 seconds.
+        """
         while True:
             self.get_message(self.topic)
-            sleep(2)
+            sleep(3)
 
 
 if __name__ == "__main__":
