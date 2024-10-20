@@ -68,7 +68,6 @@ class Subscriber(Process):
                 if item is None:
                     break
                 print(f"{self.name} consumindo {item}")
-            print("#" * 20)
 
     def run(self):
         """
