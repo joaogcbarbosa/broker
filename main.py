@@ -6,17 +6,83 @@ from time import sleep
 TOPICS = ["Sports", "News", "Tech"]
 
 
-class Broker(Thread):
-    def __init__(self):
-        Thread.__init__(self)
-        self.queues = {t: Queue() for t in TOPICS}
+class Subscriber(Process):
+    def __init__(self, name, topics, queue):
+        Process.__init__(self)
+        self.__name: str = name
+        self.__topics: list[str] | None = topics
+        self.__messages: list[str] | None = []
+        self.__queue: Queue = queue
+
+    @property
+    def name(self) -> str:
+        return self.__name
+
+    @property
+    def topics(self) -> list[str] | None:
+        return self.__topics
+
+    @property
+    def messages(self) -> list[str] | None:
+        return self.__messages
+
+    @property
+    def queue(self) -> Queue:
+        return self.__queue
+
+    def append_message(self, msg: list[str]):
+        self.__messages.append(msg)
 
     def run(self):
         """
-        Keeps broker running.
+        Se a fila real não estiver vazia, tira a mensagem dela
+        Se a mensagem já não estiver na lista de mensagens, é posta
+        Mostra a mensagem no terminal
         """
         while True:
-            pass
+            if not self.queue.empty():
+                msg = self.queue.get()
+                if msg not in self.messages:
+                    self.append_message(msg)
+            print(f"{self.name} messages: {self.messages}")
+            sleep(3)
+
+
+class Broker(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+        self.__queues: dict[str, list[str]] = {t: [] for t in TOPICS}
+        self.__subscribers: list[dict] = []
+
+    @property
+    def queues(self) -> dict[str, list[str]]:
+        return self.__queues
+
+    @property
+    def subscribers(self) -> list[dict]:
+        return self.__subscribers
+
+    def push_to_queue(self, topic: str, msg: str) -> None:
+        self.queues[topic].append(msg)
+
+    def subscribe(self, sub: Subscriber, queue: Queue) -> None:
+        self.subscribers.append({"subscriber": sub, "queue": queue})
+
+    def run(self):
+        while True:
+            """
+            Varre a lista de subscribers.
+            Se o subscriber estiver de fato inscrito para receber mensagem de algum tópico, varre esses tópicos
+            E itera sob a "fila" de mensagens, botando cada mensagem na fila real.
+            """
+            for s in self.subscribers:
+                subscriber = s["subscriber"]
+                queue = s["queue"]
+                if subscriber.topics:
+                    for topic in subscriber.topics:
+                        for msg in self.queues[topic]:
+                            queue.put(f"{subscriber.name} recebeu {msg}")
+            sleep(1)
 
 
 class Publisher(Thread):
@@ -25,76 +91,51 @@ class Publisher(Thread):
 
     def run(self):
         """
-        Generates a message of a random subject (between Sports, News and Tech) and put it on broker every 2 seconds.
+        Gera uma mensagem de assunto aleatório (entre Sports, News e Tech) e põe na "fila" a cada 0,5 segundos
         """
-        sports_counter = news_counter = tech_counter = 1
+        sports_counter = news_counter = tech_counter = 0
         while True:
             topic_choice = choice(TOPICS)
             match topic_choice:
                 case "Sports":
-                    msg = f"Mensagem {topic_choice} {sports_counter}"
-                    broker.queues["Sports"].put(msg)
                     sports_counter += 1
-                    broker.queues["Sports"].put(None)
+                    msg = f"Mensagem {topic_choice} {sports_counter}"
                 case "News":
-                    msg = f"Mensagem {topic_choice} {news_counter}"
-                    broker.queues["News"].put(msg)
                     news_counter += 1
-                    broker.queues["News"].put(None)
+                    msg = f"Mensagem {topic_choice} {news_counter}"
                 case "Tech":
-                    msg = f"Mensagem {topic_choice} {tech_counter}"
-                    broker.queues["Tech"].put(msg)
                     tech_counter += 1
-                    broker.queues["Tech"].put(None)
-            sleep(2)
-
-
-class Subscriber(Process):
-    def __init__(self, name, topics):
-        Process.__init__(self)
-        self._name: str = name
-        self._topics: list[str] | None = topics
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def topics(self):
-        return self._topics
-
-    def get_message(self, topics: list[str]) -> None:
-        while True:
-            if topics is None:
-                continue
-            print("#" * 20)
-            for t in topics:
-                item = broker.queues[t].get()
-                if item is None:
-                    break
-                print(f"{self.name} consumindo {item}")
-
-    def run(self):
-        """
-        Get messages from broker every 3 seconds.
-        """
-        while True:
-            self.get_message(self.topics)
-            sleep(3)
+                    msg = f"Mensagem {topic_choice} {tech_counter}"
+            broker.push_to_queue(topic_choice, msg)
+            sleep(0.5)
 
 
 if __name__ == "__main__":
-    publisher = Publisher()
     broker = Broker()
+    publisher = Publisher()
 
-    subscriber_1 = Subscriber(name="João", topics=["Sports", "Tech"])
-    subscriber_2 = Subscriber(name="Gustavo", topics=["Sports"])
-    subscriber_3 = Subscriber(name="Rafael", topics=None)
-    subscriber_4 = Subscriber(name="Tiago", topics=["News"])
+    # Cria filas para cada subscriber
+    queue_1 = Queue()
+    queue_2 = Queue()
+    queue_3 = Queue()
+    queue_4 = Queue()
 
+    # Cria os subscribers
+    subscriber_1 = Subscriber(name="João", topics=["Sports", "Tech"], queue=queue_1)
+    subscriber_2 = Subscriber(name="Gustavo", topics=["Sports"], queue=queue_2)
+    subscriber_3 = Subscriber(name="Rafael", topics=None, queue=queue_3)
+    subscriber_4 = Subscriber(name="Tiago", topics=["News"], queue=queue_4)
+
+    # Inscreve os subscribers no broker com suas respectivas filas
+    broker.subscribe(subscriber_1, queue_1)
+    broker.subscribe(subscriber_2, queue_2)
+    broker.subscribe(subscriber_3, queue_3)
+    broker.subscribe(subscriber_4, queue_4)
+
+    # Inicia os processos
+    broker.start()
+    publisher.start()
     subscriber_1.start()
     subscriber_2.start()
     subscriber_3.start()
     subscriber_4.start()
-    broker.start()
-    publisher.start()
