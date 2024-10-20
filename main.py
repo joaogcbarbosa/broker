@@ -56,6 +56,10 @@ class Subscriber(Process):
         self._topics: list[str] | None = topics
 
     @property
+    def name(self):
+        return self._name
+
+    @property
     def topics(self):
         return self._topics
 
