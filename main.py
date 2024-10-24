@@ -9,28 +9,28 @@ TOPICS = ["Sports", "News", "Tech"]
 class Subscriber(Process):
     def __init__(self, name, topics, queue):
         Process.__init__(self)
-        self.__name: str = name
-        self.__topics: list[str] | None = topics
-        self.__messages: list[str] | None = []
-        self.__queue: Queue = queue
+        self.__name = name
+        self.__topics = topics
+        self.__messages = []
+        self.__queue = queue
 
     @property
-    def name(self) -> str:
+    def name(self):
         return self.__name
 
     @property
-    def topics(self) -> list[str] | None:
+    def topics(self):
         return self.__topics
 
     @property
-    def messages(self) -> list[str] | None:
+    def messages(self):
         return self.__messages
 
     @property
-    def queue(self) -> Queue:
+    def queue(self):
         return self.__queue
 
-    def append_message(self, msg: list[str]):
+    def append_message(self, msg):
         self.__messages.append(msg)
 
     def run(self):
@@ -51,21 +51,21 @@ class Subscriber(Process):
 class Broker(Thread):
     def __init__(self):
         Thread.__init__(self)
-        self.__queues: dict[str, list[str]] = {t: [] for t in TOPICS}
-        self.__subscribers: list[dict] = []
+        self.__queues = {t: [] for t in TOPICS}
+        self.__subscribers = []
 
     @property
-    def queues(self) -> dict[str, list[str]]:
+    def queues(self):
         return self.__queues
 
     @property
-    def subscribers(self) -> list[dict]:
+    def subscribers(self):
         return self.__subscribers
 
-    def push_to_queue(self, topic: str, msg: str) -> None:
+    def push_to_queue(self, topic, msg):
         self.queues[topic].append(msg)
 
-    def subscribe(self, sub: Subscriber, queue: Queue) -> None:
+    def subscribe(self, sub, queue):
         self.subscribers.append({"subscriber": sub, "queue": queue})
 
     def run(self):
