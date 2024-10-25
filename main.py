@@ -96,16 +96,17 @@ class Publisher(Thread):
         sports_counter = news_counter = tech_counter = 0
         while True:
             topic_choice = choice(TOPICS)
-            match topic_choice:
-                case "Sports":
-                    sports_counter += 1
-                    msg = f"Mensagem {topic_choice} {sports_counter}"
-                case "News":
-                    news_counter += 1
-                    msg = f"Mensagem {topic_choice} {news_counter}"
-                case "Tech":
-                    tech_counter += 1
-                    msg = f"Mensagem {topic_choice} {tech_counter}"
+            if topic_choice == "Sports":
+                sports_counter += 1
+                msg = f"Mensagem {topic_choice} {sports_counter}"
+            elif topic_choice == "News":
+                news_counter += 1
+                msg = f"Mensagem {topic_choice} {news_counter}"
+            elif topic_choice == "Tech":
+                tech_counter += 1
+                msg = f"Mensagem {topic_choice} {tech_counter}"
+            else:
+                raise RuntimeError
             broker.push_to_queue(topic_choice, msg)
             sleep(0.5)
 
