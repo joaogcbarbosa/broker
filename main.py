@@ -77,12 +77,12 @@ class Broker(Thread):
             """
             for s in self.subscribers:
                 subscriber = s["subscriber"]
-                queue = s["queue"]
                 if not subscriber.topics:
                     continue
+                real_queue = s["queue"]
                 for topic in subscriber.topics:
                     for msg in self.queues[topic]:
-                        queue.put(f"{subscriber.name} recebeu {msg}")
+                        real_queue.put(f"{subscriber.name} recebeu {msg}")
             sleep(1)
 
 
