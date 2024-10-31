@@ -78,10 +78,11 @@ class Broker(Thread):
             for s in self.subscribers:
                 subscriber = s["subscriber"]
                 queue = s["queue"]
-                if subscriber.topics:
-                    for topic in subscriber.topics:
-                        for msg in self.queues[topic]:
-                            queue.put(f"{subscriber.name} recebeu {msg}")
+                if not subscriber.topics:
+                    continue
+                for topic in subscriber.topics:
+                    for msg in self.queues[topic]:
+                        queue.put(f"{subscriber.name} recebeu {msg}")
             sleep(1)
 
 
