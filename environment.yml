@@ -1,0 +1,5 @@
+name: ipc
+channels:
+  - defaults
+dependencies:
+  - python==3.12.0
